@@ -15,7 +15,14 @@ export PATH=$PATH:$HOME/.local/bin # put aws in the path
 envsubst < task-definition.json > new-task-definition.json
 
 eval $(aws ecr get-login --region $AWS_DEFAULT_REGION) #needs AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY envvars
+
+if [ $(aws ecr describe-repositories | jq '.repositories' | jq 'length') -eq 0 ]; 
+then 
+    aws ecr create-repository --repository-name $AWS_ECS_REPO_DOMAIN/$IMAGE_NAME
+fi
+
 docker push $AWS_ECS_REPO_DOMAIN/$IMAGE_NAME:$IMAGE_VERSION
+
 aws ecs register-task-definition --cli-input-json file://new-task-definition.json --region $AWS_DEFAULT_REGION > /dev/null # Create a new task revision
 TASK_REVISION=$(aws ecs describe-task-definition --task-definition $ECS_TASK --region $AWS_DEFAULT_REGION | jq '.taskDefinition.revision') #get latest revision
 SERVICE_ARN="arn:aws:ecs:$AWS_DEFAULT_REGION:$AWS_ACCOUNT_NUMBER:service/$ECS_SERVICE"
