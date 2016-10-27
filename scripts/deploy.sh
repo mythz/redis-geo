@@ -18,7 +18,7 @@ eval $(aws ecr get-login --region $AWS_DEFAULT_REGION) #needs AWS_ACCESS_KEY_ID 
 
 if [ $(aws ecr describe-repositories | jq '.repositories' | jq 'length') -eq 0 ]; 
 then 
-    aws ecr create-repository --repository-name $AWS_ECS_REPO_DOMAIN/$IMAGE_NAME
+    aws ecr create-repository --repository-name $IMAGE_NAME
 fi
 
 docker push $AWS_ECS_REPO_DOMAIN/$IMAGE_NAME:$IMAGE_VERSION
