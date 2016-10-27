@@ -16,8 +16,8 @@ envsubst < task-definition.json > new-task-definition.json
 
 eval $(aws ecr get-login --region $AWS_DEFAULT_REGION) #needs AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY envvars
 
-if [ $(aws ecr describe-repositories | jq '.repositories' | jq 'length') -eq 0 ]; 
-then 
+if [ $(aws ecr describe-repositories | jq --arg x $IMAGE_NAME '[.repositories[] | .repositoryName == $x] | any') == "true" ]; then
+    echo "ECS Repository doesn't' exist, Creating $IMAGE_NAME ..."
     aws ecr create-repository --repository-name $IMAGE_NAME
 fi
 
